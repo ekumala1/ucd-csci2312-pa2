@@ -9,6 +9,8 @@ namespace Clustering {
         double *values;
 
     public:
+        static const char POINT_VALUE_DELIM;
+
         Point(int);
         Point(int, double *);
 

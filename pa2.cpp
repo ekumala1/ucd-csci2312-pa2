@@ -1,5 +1,6 @@
 #include <iostream>
 #include "pa2check.h"
+#include <fstream>
 using namespace std;
 
 int main() {
@@ -22,13 +23,19 @@ int main() {
 
     cout << "Start Cluster Class Testing" << endl;
     cout << "----------------------------------------------------------------------------" << endl;
-    testClusterDefaultCtor();
+    /* testClusterDefaultCtor();
     testClusterCopyAssign();
     testClusterAddRemove();
     testClusterConditionalOper();
-    testClusterArithOpers();
+    testClusterArithOpers(); */
     cout << "----------------------------------------------------------------------------" << endl;
     cout << "End Cluster Class Testing" << endl << endl;
+
+    cout << "Start KMeans Class Testing" << endl;
+    cout << "----------------------------------------------------------------------------" << endl;
+
+    cout << "----------------------------------------------------------------------------" << endl;
+    cout << "End KMeans Class Testing" << endl;
 
     return 0;
 }

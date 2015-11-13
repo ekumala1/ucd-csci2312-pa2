@@ -1,6 +1,8 @@
 #include "Cluster.h"
 
 namespace Clustering {
+    int idGenerator = 1;
+
     bool Cluster::in(Cluster &cluster, PointPtr &pointPtr) {
         LNodePtr lNodePtr = cluster.head;
         bool in = false;
@@ -14,7 +16,7 @@ namespace Clustering {
         return in;
     }
 
-    Cluster::Cluster(const Cluster &cluster) {
+    Cluster::Cluster(const Cluster &cluster) : dim(cluster.dim), __centroid(cluster.__centroid) {
         size = 0;
         LNodePtr thisPtr = new LNode, clusterPtr = cluster.head;
         thisPtr->p = clusterPtr->p;
@@ -27,6 +29,9 @@ namespace Clustering {
 
     Cluster &Cluster::operator=(const Cluster &cluster) {
         size = 0;
+        dim = cluster.dim;
+        __centroid = cluster.__centroid;
+
         LNodePtr thisPtr = new LNode, clusterPtr = cluster.head;
         thisPtr->p = clusterPtr->p;
 

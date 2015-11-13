@@ -1,5 +1,8 @@
 #include "Point.h"
 #include <cmath>
+#include <string>
+#include <sstream>
+#include <stdlib.h>
 
 namespace Clustering {
     Point::Point(int dims) {
@@ -13,7 +16,7 @@ namespace Clustering {
         if (dims != 0) {
             dim = dims;
 
-            values = new double[dims];
+            values = new double[dim];
             for (int i=0; i<dims; i++)
                 values[i] = pValues[i];
         }
@@ -21,19 +24,19 @@ namespace Clustering {
 
     Point::Point(const Point &point) {
         dim = point.dim;
+
         values = new double[dim];
         for (int i=0; i<dim; i++)
             values[i] = point.values[i];
     }
 
     Point &Point::operator=(const Point &point) {
-        if (this == &point)
-            return *this;
-
-        dim = point.dim;
-        values = new double[dim];
-        for (int i=0; i<dim; i++)
-            values[i] = point.values[i];
+        if (this != &point) {
+            dim = point.dim;
+            values = new double[dim];
+            for (int i=0; i<dim; i++)
+                values[i] = point.values[i];
+        }
 
         return *this;
     }
@@ -183,18 +186,22 @@ namespace Clustering {
     }
 
     std::ostream &operator<<(std::ostream &ostream, const Point &point) {
-        ostream << "(";
         for (int i=1; i<point.dim; i++)
             ostream << point.values[i-1] << ", ";
-        ostream << point.values[point.dim-1] << ")";
+        ostream << point.values[point.dim-1];
 
         return ostream;
     }
 
     std::istream &operator>>(std::istream &istream, Point &point) {
-        for (int i=1; i<=point.dim; i++)
-            istream >> point.values[i-1];
+        std::string line, value;
+        const char POINT_VALUE_DELIM = ',';
+        int i = 1;
 
+        while (getline(istream, value, POINT_VALUE_DELIM)) {
+            std::cout << value;
+            point.setValue(i++, strtod(value.c_str(), NULL));
+        }
         return istream;
     }
 }

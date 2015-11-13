@@ -1,4 +1,6 @@
 #include <cassert>
+#include <fstream>
+#include <sstream>
 #include "pa2check.h"
 #include "Point.h"
 #include "Cluster.h"
@@ -33,15 +35,14 @@ void testPointAssignOper() {
 }
 
 void testPointInputOper() {
-    int dimensions;
-    cout << "Enter # of dimensions: ";
-    cin >> dimensions;
+    cout << "Reading in Point with dimension 5 from points.txt..." << endl;
+    Point point(5);
+//    ifstream stream("points.txt");
+    std::string data =  {"4.5, 6.7, 2.3, 0, 1"};
+    std::stringstream stream(data);
+    stream >> point;
 
-    Point point(dimensions);
-    cout << "Enter a " << dimensions << "-dimensional point separated by spaces (without parentheses): ";
-    cin >> point;
-
-    cout << "You entered " << point << "." << endl;
+    cout << "Point read in from points.txt: " << point << endl;
 }
 
 void testPointGetDims() {
@@ -105,7 +106,7 @@ void testPointConditionOpers() {
     cout << "Conditional operators work!" << endl;
 }
 
-void testClusterDefaultCtor() {
+/* void testClusterDefaultCtor() {
     Cluster cluster;
     cout << "Cluster produced with default constructor: " << cluster << endl;
 }
@@ -184,4 +185,4 @@ void testClusterArithOpers() {
     cout << "cluster1 + point2: " << cluster1 + &point2 << endl;
     cout << "cluster1 - point2: " << cluster1 - &point2 << endl;
     cout << "cluster1 - point3: " << cluster1 - &point3 << endl;
-}
+} */

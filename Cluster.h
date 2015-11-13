@@ -3,8 +3,7 @@
 
 #include <iostream>
 #include "Point.h"
-
-namespace Clustering {
+    namespace Clustering {
     typedef Point *PointPtr;
     typedef struct LNode *LNodePtr;
 
@@ -15,11 +14,16 @@ namespace Clustering {
 
     class Cluster {
         int size;
+        int dim;
+        unsigned int __id;
+        static unsigned int idGenerator;
         LNodePtr head;
+        Point __centroid;
+        bool __centroidValid;
         bool in(Cluster &, PointPtr &);
 
     public:
-        Cluster() : size(0), head(nullptr) {};
+        Cluster(int dims) : size(0), head(nullptr), dim(dims), __centroid(dim), __id(idGenerator++) {};
 
         // The big three: cpy ctor, overloaded operator=, dtor
         Cluster(const Cluster &);
@@ -40,6 +44,7 @@ namespace Clustering {
         // - Friends
         friend bool operator==(const Cluster &lhs, const Cluster &rhs);
 
+
         // - Members
         Cluster &operator+=(const Cluster &rhs); // union
         Cluster &operator-=(const Cluster &rhs); // (asymmetric) difference
@@ -54,6 +59,25 @@ namespace Clustering {
 
         friend const Cluster operator+(const Cluster &lhs, const PointPtr &rhs);
         friend const Cluster operator-(const Cluster &lhs, const PointPtr &rhs);
+
+        // Centroid operations
+        void setCentroid(const Point &);
+        const Point getCentroid();
+        void computeCentroid();
+        void pickPoints(int, PointPtr *);
+
+        class Move {
+            const PointPtr &pointPtr;
+            Cluster *fromCluster;
+            Cluster *toCluster;
+        public:
+            Move(const PointPtr &p, Cluster *from, Cluster *to) : pointPtr(p), fromCluster(from), toCluster(to) {};
+            void perform() {
+                toCluster->add(fromCluster->remove(pointPtr));
+                fromCluster->__centroidValid = false;
+                toCluster->__centroidValid = false;
+            };
+        };
     };
 
 }

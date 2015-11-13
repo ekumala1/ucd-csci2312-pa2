@@ -1,3 +1,4 @@
+// Point testing
 void testPointDimCtor();
 void testPointDimValuesCtor();
 void testPointCopyCtor();
@@ -10,8 +11,13 @@ void testPointDistanceTo();
 void testPointArithOpers();
 void testPointBracketOper();
 void testPointConditionOpers();
-void testClusterDefaultCtor();
+
+// PA2 Cluster testing (not applicable)
+/* void testClusterDefaultCtor();
 void testClusterCopyAssign();
 void testClusterAddRemove();
 void testClusterConditionalOper();
-void testClusterArithOpers();
+void testClusterArithOpers(); */
+
+// PA3 Cluster testing
+
