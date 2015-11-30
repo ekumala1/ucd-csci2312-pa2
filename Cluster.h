@@ -1,3 +1,7 @@
+//
+// Created by Enoch Kumala on 10/31/2015.
+//
+
 #ifndef CLUSTERING_CLUSTER_H
 #define CLUSTERING_CLUSTER_H
 
@@ -15,11 +19,18 @@ namespace Clustering {
 
     class Cluster {
         int size;
+        int dimensionality;
+        unsigned int __id;
         LNodePtr head;
-        bool in(Cluster &, PointPtr &);
+        Point __centroid;
+        bool __centroidValid;
+        bool in(const Cluster &, const PointPtr &);
 
     public:
-        Cluster() : size(0), head(nullptr) {};
+        static const char POINT_CLUSTER_ID_DELIM;
+
+        Cluster() : size(0), dimensionality(5), __id(generateId()), head(nullptr), __centroid(dimensionality) {};
+        Cluster(int dims) : size(0), dimensionality(dims), __id(generateId()), head(nullptr), __centroid(dimensionality) {};
 
         // The big three: cpy ctor, overloaded operator=, dtor
         Cluster(const Cluster &);
@@ -40,6 +51,7 @@ namespace Clustering {
         // - Friends
         friend bool operator==(const Cluster &lhs, const Cluster &rhs);
 
+
         // - Members
         Cluster &operator+=(const Cluster &rhs); // union
         Cluster &operator-=(const Cluster &rhs); // (asymmetric) difference
@@ -54,7 +66,43 @@ namespace Clustering {
 
         friend const Cluster operator+(const Cluster &lhs, const PointPtr &rhs);
         friend const Cluster operator-(const Cluster &lhs, const PointPtr &rhs);
-    };
 
+        int getDims() { return dimensionality; }
+
+        int generateId() {
+            static int idGenerator = 0; // to make index start from 1
+            return idGenerator++;
+        }
+
+        Point &operator[](int index);
+
+        // Centroid operations
+        void setCentroid(const Point &centroid) { __centroid = centroid; };
+        const Point getCentroid() { return __centroid; };
+        void computeCentroid();
+        const bool centroidValid() { return __centroidValid; };
+
+        class Move {
+            const PointPtr &pointPtr;
+            Cluster *fromCluster;
+            Cluster *toCluster;
+        public:
+            Move(const PointPtr &p, Cluster *from, Cluster *to) : pointPtr(p), fromCluster(from), toCluster(to) {};
+            void perform() {
+                toCluster->add(fromCluster->remove(pointPtr));
+                fromCluster->__centroidValid = false;
+                toCluster->__centroidValid = false;
+            };
+        };
+
+        void pickPoints(int, PointPtr *);
+        int getSize() { return size; }
+
+        double intraClusterDistance() const;
+        friend double interClusterDistance(const Cluster &, const Cluster &);
+        int getClusterEdges() { return (size * (size - 1)) / 2; };
+        friend double interClusterEdges(const Cluster &c1, const Cluster &c2) { return c1.size * c2.size; };
+    };
 }
+
 #endif //CLUSTERING_CLUSTER_H

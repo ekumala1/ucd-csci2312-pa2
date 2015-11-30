@@ -1,3 +1,7 @@
+//
+// Created by Enoch Kumala on 10/31/2015.
+//
+
 #ifndef CLUSTERING_POINT_H
 #define CLUSTERING_POINT_H
 
@@ -9,6 +13,8 @@ namespace Clustering {
         double *values;
 
     public:
+        static const char POINT_VALUE_DELIM;
+
         Point(int);
         Point(int, double *);
 

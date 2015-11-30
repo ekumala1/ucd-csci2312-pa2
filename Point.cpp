@@ -1,19 +1,31 @@
-#include "Point.h"
+//
+// Created by Enoch Kumala on 10/31/2015.
+//
+
 #include <cmath>
+#include <string>
+#include <sstream>
+#include <stdlib.h>
+#include "Point.h"
 
 namespace Clustering {
+    const char Point::POINT_VALUE_DELIM = ',';
+
     Point::Point(int dims) {
         if (dims != 0) {
             dim = dims;
             values = new double[dim];
+
+            for (int i=0; i<dim; i++)
+                values[i] = 0;
         }
     }
 
     Point::Point(int dims, double *pValues) {
         if (dims != 0) {
             dim = dims;
+            values = new double[dim];
 
-            values = new double[dims];
             for (int i=0; i<dims; i++)
                 values[i] = pValues[i];
         }
@@ -22,18 +34,18 @@ namespace Clustering {
     Point::Point(const Point &point) {
         dim = point.dim;
         values = new double[dim];
+
         for (int i=0; i<dim; i++)
             values[i] = point.values[i];
     }
 
     Point &Point::operator=(const Point &point) {
-        if (this == &point)
-            return *this;
-
-        dim = point.dim;
-        values = new double[dim];
-        for (int i=0; i<dim; i++)
-            values[i] = point.values[i];
+        if (this != &point) {
+            dim = point.dim;
+            values = new double[dim];
+            for (int i=0; i<dim; i++)
+                values[i] = point.values[i];
+        }
 
         return *this;
     }
@@ -182,19 +194,21 @@ namespace Clustering {
         return false;
     }
 
-    std::ostream &operator<<(std::ostream &ostream, const Point &point) {
-        ostream << "(";
+    std::ostream &operator<<(std::ostream &stream, const Point &point) {
         for (int i=1; i<point.dim; i++)
-            ostream << point.values[i-1] << ", ";
-        ostream << point.values[point.dim-1] << ")";
+            stream << point.values[i-1] << Point::POINT_VALUE_DELIM << " ";
+        stream << point.values[point.dim-1];
 
-        return ostream;
+        return stream;
     }
 
-    std::istream &operator>>(std::istream &istream, Point &point) {
-        for (int i=1; i<=point.dim; i++)
-            istream >> point.values[i-1];
+    std::istream &operator>>(std::istream &stream, Point &point) {
+        std::string line, value;
+        int i = 1;
 
-        return istream;
+        while (getline(stream, value, Point::POINT_VALUE_DELIM))
+            point[i++] = strtod(value.c_str(), NULL);
+
+        return stream;
     }
 }

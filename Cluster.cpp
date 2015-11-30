@@ -1,7 +1,14 @@
+//
+// Created by Enoch Kumala on 10/31/2015.
+//
+
+#include <sstream>
+#include "Point.h"
 #include "Cluster.h"
+using namespace std;
 
 namespace Clustering {
-    bool Cluster::in(Cluster &cluster, PointPtr &pointPtr) {
+    bool Cluster::in(const Cluster &cluster, const PointPtr &pointPtr) {
         LNodePtr lNodePtr = cluster.head;
         bool in = false;
 
@@ -14,10 +21,13 @@ namespace Clustering {
         return in;
     }
 
-    Cluster::Cluster(const Cluster &cluster) {
+    Cluster::Cluster(const Cluster &cluster) : __centroid(cluster.__centroid) {
+        __centroid = cluster.__centroid;
         size = 0;
-        LNodePtr thisPtr = new LNode, clusterPtr = cluster.head;
-        thisPtr->p = clusterPtr->p;
+        dimensionality = cluster.dimensionality;
+        __id = generateId();
+
+        LNodePtr clusterPtr = cluster.head;
 
         while (clusterPtr != nullptr) {
             add(clusterPtr->p);
@@ -27,6 +37,9 @@ namespace Clustering {
 
     Cluster &Cluster::operator=(const Cluster &cluster) {
         size = 0;
+        dimensionality = cluster.dimensionality;
+        __centroid = cluster.__centroid;
+
         LNodePtr thisPtr = new LNode, clusterPtr = cluster.head;
         thisPtr->p = clusterPtr->p;
 
@@ -77,48 +90,60 @@ namespace Clustering {
         }
 
         size++;
+        __centroidValid = false;
     }
 
     const PointPtr &Cluster::remove(const PointPtr &pointPtr) {
         if (size != 0) {
-            LNodePtr prevPtr, delPtr=new LNode, currPtr=head;
-            delPtr->p = pointPtr;
+            if (in(*this, pointPtr)) {
+                LNodePtr prevPtr, currPtr = head;
 
-            while (currPtr != nullptr && currPtr->p != pointPtr) {
-                prevPtr = currPtr;
-                currPtr = currPtr->next;
+                while (currPtr != nullptr && currPtr->p != pointPtr) {
+                    prevPtr = currPtr;
+                    currPtr = currPtr->next;
+                }
+
+                if (currPtr == head)// if delete position is at beginning of list
+                    head = currPtr->next;
+                else if (currPtr == nullptr) // if delete position is at end of list
+                    prevPtr->next = nullptr;
+                else // if delete position is in middle of list
+                    prevPtr->next = currPtr->next;
+
+                size--;
             }
-
-            if (currPtr == head)// if delete position is at beginning of list
-                head = currPtr->next;
-            else if (currPtr == nullptr) // if delete position is at end of list
-                prevPtr->next = nullptr;
-            else // if delete position is in middle of list
-                prevPtr->next = currPtr->next;
-
-            size--;
         }
 
+        __centroidValid = false;
         return pointPtr;
     }
 
-    std::ostream &operator<<(std::ostream &ostream, const Cluster &cluster) {
+    ostream &operator<<(ostream &stream, const Cluster &cluster) {
+        const char POINT_CLUSTER_ID_DELIM = ':';
         LNodePtr lNodePtr = cluster.head;
-        ostream << "{";
+
         if (cluster.size != 0) {
-            while (lNodePtr->next != nullptr) {
-                ostream << *(lNodePtr->p) << ", ";
+            while (lNodePtr != nullptr) {
+                stream << *(lNodePtr->p) << " " << POINT_CLUSTER_ID_DELIM << " " << cluster.__id << endl;
                 lNodePtr = lNodePtr->next;
             }
-            ostream << *(lNodePtr->p);
         }
-        ostream << "}";
 
-        return ostream;
+        return stream;
     }
 
-    std::istream &operator>>(std::istream &istream, Cluster &cluster) {
-        return istream;
+    istream &operator>>(istream &stream, Cluster &cluster) {
+        string line;
+
+        while (getline(stream, line)) {
+            stringstream sstream(line);
+            Point *point = new Point(count(line.begin(), line.end(), Point::POINT_VALUE_DELIM) + 1);
+            sstream >> *point;
+
+            cluster.add(point);
+        }
+
+        return stream;
     }
 
     bool operator==(const Cluster &lhs, const Cluster &rhs) {
@@ -198,5 +223,73 @@ namespace Clustering {
         cluster.remove(rhs);
 
         return cluster;
+    }
+
+    Point &Cluster::operator[](int index) {
+        LNodePtr lNodePtr = head;
+
+        for (int i=0; i<index; i++)
+            lNodePtr = lNodePtr->next;
+
+        return *lNodePtr->p;
+    }
+
+    void Cluster::computeCentroid() {
+        Point sum(dimensionality);
+        LNodePtr nodePtr = head;
+
+        while (nodePtr != nullptr) {
+            sum += *nodePtr->p;
+            nodePtr = nodePtr->next;
+        }
+
+        __centroid = sum;
+        __centroidValid = true;
+    }
+
+    void Cluster::pickPoints(int k, PointPtr pointArray[]) {
+        LNodePtr currPtr = head;
+        int skipAmount = size / k;
+
+        for (int i=0; i<size; i++) {
+            for (int j=0; j<skipAmount-1; j++)
+                currPtr = currPtr->next;
+            pointArray[i] = currPtr->p;
+        }
+    }
+
+    double Cluster::intraClusterDistance() const {
+        LNodePtr innerPtr = head, outerPtr = head;
+        double sum = 0;
+
+        while (outerPtr != nullptr) {
+            while (innerPtr != nullptr) {
+                sum += outerPtr->p->distanceTo(*innerPtr->p);
+                innerPtr = innerPtr->next;
+            }
+            innerPtr = head;
+            outerPtr = outerPtr->next;
+        }
+
+        sum /= 2;
+        return sum;
+    }
+
+    double interClusterDistance(const Cluster &c1, const Cluster &c2) {
+        Cluster cluster = c1 + c2;
+        LNodePtr innerPtr = cluster.head, outerPtr = cluster.head;
+        double sum = 0;
+
+        while (outerPtr != nullptr) {
+            while (innerPtr != nullptr) {
+                sum += outerPtr->p->distanceTo(*innerPtr->p);
+                innerPtr = innerPtr->next;
+            }
+            innerPtr = cluster.head;
+            outerPtr = outerPtr->next;
+        }
+
+        sum /= 2;
+        return sum;
     }
 }
